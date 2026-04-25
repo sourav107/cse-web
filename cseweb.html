@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUP CSE — Student Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   TOKENS & RESET
+═══════════════════════════════════════════════════ */
+:root {
+  --bg:        #04060f;
+  --bg2:       #070c1a;
+  --bg3:       #0b1124;
+  --surface:   rgba(11,17,36,0.80);
+  --surface2:  rgba(16,25,52,0.70);
+  --border:    rgba(90,130,255,0.10);
+  --border2:   rgba(90,130,255,0.22);
+  --border3:   rgba(90,130,255,0.38);
+  --accent:    #5a82ff;
+  --accent2:   #8b5cf6;
+  --accent3:   #06efb4;
+  --gold:      #f5c842;
+  --red:       #f0525f;
+  --orange:    #f59e0b;
+  --text:      #eef0f8;
+  --text2:     #7a87a8;
+  --text3:     #3d4a66;
+  --glass:     rgba(10,15,30,0.72);
+  --glow-b:    rgba(90,130,255,0.18);
+  --glow-p:    rgba(139,92,246,0.14);
+  --shadow:    0 20px 60px rgba(0,0,0,0.55);
+  --r:         14px;
+  --r2:        20px;
+}
+[data-theme="light"] {
+  --bg:       #f2f4fb;
+  --bg2:      #e8ecf7;
+  --bg3:      #fff;
+  --surface:  rgba(255,255,255,0.88);
+  --surface2: rgba(240,244,255,0.82);
+  --border:   rgba(90,130,255,0.12);
+  --border2:  rgba(90,130,255,0.25);
+  --text:     #111827;
+  --text2:    #4b5680;
+  --text3:    #9aa5cc;
+  --glass:    rgba(255,255,255,0.80);
+  --shadow:   0 20px 60px rgba(0,0,0,0.10);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:14px}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px;opacity:.6}
+
+/* ── grid noise overlay ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(90,130,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 90%, rgba(139,92,246,0.06) 0%, transparent 60%),
+    linear-gradient(rgba(90,130,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(90,130,255,0.025) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,44px 44px,44px 44px;
+}
+
+/* ═══════════════════════════════════════════════════
+   INTRO SCREEN
+═══════════════════════════════════════════════════ */
+#introScreen{
+  position:fixed;inset:0;z-index:2000;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg);
+  overflow:hidden;
+}
+#introScreen::before{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle 600px at 30% 50%, rgba(90,130,255,0.12), transparent),
+    radial-gradient(circle 400px at 70% 50%, rgba(139,92,246,0.10), transparent);
+  animation:introGlow 3s ease infinite alternate;
+}
+@keyframes introGlow{
+  from{opacity:.7}to{opacity:1}
+}
+.intro-center{
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;position:relative;
+}
+/* BUP letters */
+.intro-bup{
+  display:flex;gap:4px;
+  overflow:hidden;
+}
+.intro-bup .letter{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(64px,12vw,120px);
+  font-weight:900;
+  line-height:1;
+  background:linear-gradient(135deg,#fff 0%,var(--accent) 50%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  opacity:0;
+  transform:translateY(40px);
+  animation:letterRise .5s cubic-bezier(.22,.61,.36,1) forwards;
+  display:inline-block;
+}
+.intro-bup .letter:nth-child(1){animation-delay:.1s}
+.intro-bup .letter:nth-child(2){animation-delay:.22s}
+.intro-bup .letter:nth-child(3){animation-delay:.34s}
+@keyframes letterRise{
+  to{opacity:1;transform:translateY(0)}
+}
+.intro-tagline{
+  font-size:13px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--text2);margin-top:10px;
+  opacity:0;animation:fadeIn .6s ease .7s forwards;
+}
+.intro-sub{
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);margin-top:4px;
+  opacity:0;animation:fadeIn .6s ease .9s forwards;
+}
+.intro-bar{
+  width:160px;height:2px;margin-top:32px;
+  background:var(--border2);border-radius:2px;overflow:hidden;
+  opacity:0;animation:fadeIn .4s ease 1.0s forwards;
+}
+.intro-bar-fill{
+  height:100%;width:0;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:2px;
+  animation:barFill 1.2s cubic-bezier(.4,0,.2,1) 1.1s forwards;
+}
+@keyframes barFill{to{width:100%}}
+.intro-dots{
+  display:flex;gap:6px;margin-top:14px;
+  opacity:0;animation:fadeIn .4s ease 1.1s forwards;
+}
+.intro-dots span{
+  width:4px;height:4px;border-radius:50%;
+  background:var(--accent);opacity:.4;
+  animation:dotPulse 1.2s ease infinite;
+}
+.intro-dots span:nth-child(2){animation-delay:.2s}
+.intro-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotPulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+@keyframes fadeIn{to{opacity:1}}
+
+.intro-exit{animation:introExit .6s cubic-bezier(.55,0,1,.45) forwards}
+@keyframes introExit{
+  to{opacity:0;transform:scale(1.04);pointer-events:none}
+}
+
+/* ═══════════════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════════════ */
+#loginScreen{
+  position:fixed;inset:0;z-index:1000;
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+#loginScreen.visible{display:flex}
+#loginScreen.fadeIn{animation:screenFadeIn .6s ease both}
+@keyframes screenFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* orbs */
+.l-orb{position:absolute;border-radius:50%;filter:blur(90px);animation:orbDrift 8s ease-in-out infinite alternate;pointer-events:none}
+.l-orb.a{width:500px;height:500px;top:-120px;left:-140px;background:rgba(90,130,255,0.11);animation-duration:7s}
+.l-orb.b{width:380px;height:380px;bottom:-80px;right:-100px;background:rgba(139,92,246,0.10);animation-duration:9s;animation-delay:-4s}
+.l-orb.c{width:200px;height:200px;top:40%;left:45%;background:rgba(6,239,180,0.06);animation-duration:5s;animation-delay:-2s}
+@keyframes orbDrift{from{transform:translate(0,0) scale(1)}to{transform:translate(24px,18px) scale(1.05)}}
+
+.login-card{
+  background:var(--glass);
+  backdrop-filter:blur(32px) saturate(1.4);
+  -webkit-backdrop-filter:blur(32px) saturate(1.4);
+  border:1px solid var(--border2);
+  border-radius:24px;
+  padding:44px 40px;
+  width:100%;max-width:420px;
+  position:relative;
+  box-shadow:var(--shadow),0 0 0 1px rgba(90,130,255,0.06),inset 0 1px 0 rgba(255,255,255,0.06);
+}
+/* top accent line */
+.login-card::before{
+  content:'';position:absolute;top:0;left:24px;right:24px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(90,130,255,0.5),transparent);
+}
+
+/* institution badge */
+.login-institution{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:24px;
+  padding-bottom:22px;
+  border-bottom:1px solid var(--border);
+}
+.login-badge{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;
+  font-size:16px;font-weight:900;color:#fff;
+  box-shadow:0 4px 16px rgba(90,130,255,0.35);
+}
+.login-inst-text .t1{
+  font-weight:700;font-size:13px;color:var(--text);line-height:1.2;
+}
+.login-inst-text .t2{
+  font-size:11px;color:var(--text2);margin-top:1px;
+}
+
+.login-title{
+  font-family:'Playfair Display',serif;
+  font-size:26px;font-weight:800;
+  color:var(--text);
+  line-height:1.15;
+  margin-bottom:5px;
+}
+.login-subtitle{
+  font-size:13px;color:var(--text2);
+  margin-bottom:32px;
+  font-weight:300;
+}
+
+/* floating label input */
+.fl-group{
+  position:relative;margin-bottom:20px;
+}
+.fl-group input{
+  width:100%;
+  background:rgba(90,130,255,0.05);
+  border:1.5px solid var(--border2);
+  border-radius:12px;
+  padding:22px 16px 8px;
+  color:var(--text);
+  font-size:14px;font-family:'DM Sans',sans-serif;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.fl-group input:focus{
+  border-color:var(--accent);
+  background:rgba(90,130,255,0.08);
+  box-shadow:0 0 0 3px rgba(90,130,255,0.14),0 0 20px rgba(90,130,255,0.06);
+}
+.fl-group label{
+  position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  font-size:13px;color:var(--text2);
+  transition:all .2s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+  font-weight:500;
+}
+.fl-group input:focus ~ label,
+.fl-group input:not(:placeholder-shown) ~ label{
+  top:10px;transform:none;font-size:10px;color:var(--accent);
+  letter-spacing:.4px;text-transform:uppercase;font-weight:600;
+}
+.fl-group input::placeholder{color:transparent}
+
+/* password toggle */
+.fl-group .pw-toggle{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;
+  color:var(--text2);font-size:15px;
+  padding:4px;transition:color .2s;
+  line-height:1;
+}
+.fl-group .pw-toggle:hover{color:var(--accent)}
+.fl-group.has-toggle input{padding-right:40px}
+
+.login-btn{
+  width:100%;padding:15px;margin-top:4px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:12px;
+  color:#fff;font-size:15px;font-weight:600;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;letter-spacing:.3px;
+  position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 6px 24px rgba(90,130,255,0.3);
+}
+.login-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.14),transparent);
+  transition:opacity .2s;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(90,130,255,0.44)}
+.login-btn:active{transform:translateY(0)}
+/* shimmer */
+.login-btn::after{
+  content:'';position:absolute;
+  top:0;left:-100%;
+  width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.14),transparent);
+  skewX(-20deg);
+  animation:btnShimmer 2.4s ease 2s infinite;
+}
+@keyframes btnShimmer{
+  0%{left:-100%}50%,100%{left:160%}
+}
+
+.login-error{
+  display:none;
+  margin-top:14px;padding:11px 14px;
+  background:rgba(240,82,95,0.10);
+  border:1px solid rgba(240,82,95,0.22);
+  border-radius:10px;
+  color:var(--red);font-size:12px;
+  animation:shake .35s ease;
+}
+.login-error.show{display:block}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-6px)}
+  75%{transform:translateX(6px)}
+}
+.login-footer{
+  margin-top:24px;
+  font-size:11px;color:var(--text3);text-align:center;
+}
+.login-footer span{color:var(--accent);font-weight:600}
+
+/* ═══════════════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════════════ */
+#app{display:none;min-height:100vh;position:relative;z-index:1}
+#app.visible{display:block;animation:screenFadeIn .5s ease both}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:256px;
+  background:var(--glass);
+  backdrop-filter:blur(28px) saturate(1.3);
+  -webkit-backdrop-filter:blur(28px) saturate(1.3);
+  border-right:1px solid var(--border);
+  z-index:100;
+  display:flex;flex-direction:column;
+  padding:22px 14px;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar::after{
+  content:'';position:absolute;top:0;right:0;
+  width:1px;height:100%;
+  background:linear-gradient(180deg,transparent,var(--border2) 30%,var(--border2) 70%,transparent);
+}
+
+.sb-brand{
+  display:flex;align-items:center;gap:11px;
+  padding:2px 8px 20px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:18px;
+}
+.sb-icon{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;font-weight:900;
+  font-size:14px;color:#fff;
+  box-shadow:0 4px 12px rgba(90,130,255,0.3);
+}
+.sb-brand-text .n1{
+  font-weight:700;font-size:13px;color:var(--text);letter-spacing:-.01em;
+}
+.sb-brand-text .n2{font-size:10px;color:var(--text2);letter-spacing:.2px;margin-top:1px}
+
+.nav-sec{margin-bottom:20px}
+.nav-sec-label{
+  font-size:9px;font-weight:700;color:var(--text3);
+  letter-spacing:1.4px;text-transform:uppercase;
+  padding:0 8px;margin-bottom:6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 12px;border-radius:10px;
+  cursor:pointer;
+  transition:all .18s;
+  color:var(--text2);font-size:13.5px;font-weight:500;
+  margin-bottom:1px;position:relative;
+  user-select:none;
+}
+.nav-item:hover{background:rgba(90,130,255,0.07);color:var(--text)}
+.nav-item.active{
+  background:linear-gradient(135deg,rgba(90,130,255,0.16),rgba(139,92,246,0.10));
+  color:var(--accent);
+  border:1px solid rgba(90,130,255,0.18);
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:-14px;top:50%;transform:translateY(-50%);
+  width:3px;height:60%;border-radius:0 2px 2px 0;
+  background:linear-gradient(180deg,var(--accent),var(--accent2));
+}
+.ni{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nb{
+  margin-left:auto;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-size:9px;font-weight:700;
+  padding:1px 7px;border-radius:10px;
+  box-shadow:0 2px 8px rgba(90,130,255,0.35);
+}
+
+.sb-footer{
+  margin-top:auto;
+  padding:12px;
+  background:rgba(90,130,255,0.04);
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-user .uf-name{font-size:12px;font-weight:600;color:var(--text)}
+.sb-user .uf-role{font-size:10px;color:var(--accent);margin-top:1px}
+.sb-user .uf-email{font-size:9.5px;color:var(--text3);margin-top:1px;word-break:break-all}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:256px;right:0;height:60px;
+  background:var(--glass);
+  backdrop-filter:blur(28px) saturate(1.3);
+  -webkit-backdrop-filter:blur(28px) saturate(1.3);
+  border-bottom:1px solid var(--border);
+  z-index:99;
+  display:flex;align-items:center;
+  padding:0 24px;gap:14px;
+}
+.topbar::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border2),transparent);
+}
+.topbar-title{
+  font-family:'Playfair Display',serif;
+  font-size:17px;font-weight:700;
+  color:var(--text);flex:1;
+}
+.topbar-search{position:relative;display:flex;align-items:center}
+.topbar-search input{
+  background:rgba(90,130,255,0.05);
+  border:1.5px solid var(--border2);
+  border-radius:10px;
+  padding:8px 14px 8px 34px;
+  color:var(--text);font-size:12.5px;
+  outline:none;width:220px;
+  font-family:'DM Sans',sans-serif;
+  transition:all .22s;
+}
+.topbar-search input:focus{border-color:var(--accent);width:260px;box-shadow:0 0 0 3px rgba(90,130,255,0.10)}
+.topbar-search .si{position:absolute;left:10px;color:var(--text3);font-size:13px}
+.icon-btn{
+  width:34px;height:34px;border-radius:9px;
+  background:rgba(90,130,255,0.07);
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;
+  transition:all .18s;flex-shrink:0;
+}
+.icon-btn:hover{background:rgba(90,130,255,0.15);border-color:var(--border3)}
+.logout-btn{
+  padding:7px 14px;
+  background:rgba(240,82,95,0.08);
+  border:1px solid rgba(240,82,95,0.18);
+  border-radius:9px;
+  color:var(--red);font-size:11.5px;font-weight:600;
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+}
+.logout-btn:hover{background:rgba(240,82,95,0.18)}
+
+/* ── MAIN ── */
+.main{margin-left:256px;padding-top:60px;min-height:100vh}
+.page{display:none;padding:26px;animation:pageSlide .28s cubic-bezier(.4,0,.2,1)}
+.page.active{display:block}
+@keyframes pageSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PAGE HEADER ── */
+.ph{margin-bottom:26px}
+.ph .bc{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);margin-bottom:7px}
+.ph .bc span{color:var(--accent)}
+.ph h1{font-family:'Playfair Display',serif;font-size:26px;font-weight:800;letter-spacing:-.02em}
+.ph p{color:var(--text2);font-size:13px;margin-top:4px}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{
+  background:var(--surface);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:20px 18px;
+  position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+  cursor:default;
+}
+.stat-card:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 12px 40px rgba(0,0,0,0.3),var(--glow-b)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--sc-grad,linear-gradient(90deg,var(--accent),var(--accent2)))}
+.stat-card .sc-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:14px}
+.stat-card .sc-val{font-family:'DM Mono',monospace;font-size:30px;font-weight:500;line-height:1;margin-bottom:4px;letter-spacing:-.02em}
+.stat-card .sc-label{font-size:11.5px;color:var(--text2);font-weight:500}
+.stat-card .sc-sub{font-size:10.5px;color:var(--text3);margin-top:5px}
+
+/* ── SEC CARD ── */
+.sec{
+  background:var(--surface);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:20px 22px;
+  margin-bottom:18px;
+}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700}
+.sec-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.pill-btn{
+  padding:6px 14px;
+  background:rgba(90,130,255,0.09);
+  border:1px solid rgba(90,130,255,0.18);
+  border-radius:8px;
+  color:var(--accent);font-size:11px;font-weight:600;
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+}
+.pill-btn:hover{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{
+  text-align:left;padding:9px 13px;
+  font-size:9.5px;font-weight:700;color:var(--text3);
+  letter-spacing:.9px;text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+}
+tbody tr{border-bottom:1px solid rgba(90,130,255,0.035);transition:background .14s;cursor:pointer}
+tbody tr:hover{background:rgba(90,130,255,0.05)}
+tbody td{padding:11px 13px;color:var(--text2)}
+tbody td:first-child{color:var(--text);font-weight:500}
+
+/* ── GRADE BADGE ── */
+.grade{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:34px;height:20px;border-radius:5px;
+  font-size:10.5px;font-weight:700;
+  font-family:'DM Mono',monospace;padding:0 6px;
+}
+.g-ap{background:rgba(6,239,180,0.14);color:var(--accent3)}
+.g-a{background:rgba(90,130,255,0.14);color:var(--accent)}
+.g-am{background:rgba(90,130,255,0.09);color:#7ab3ff}
+.g-bp{background:rgba(245,158,11,0.12);color:var(--orange)}
+.g-b{background:rgba(245,158,11,0.09);color:#fbbf24}
+.g-bm{background:rgba(245,158,11,0.07);color:#fcd34d}
+.g-low{background:rgba(240,82,95,0.10);color:var(--red)}
+.g-f{background:rgba(240,82,95,0.18);color:var(--red)}
+
+/* ── STATUS BADGE ── */
+.status{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:20px;
+  font-size:10.5px;font-weight:600;
+}
+.s-passed{background:rgba(6,239,180,0.10);color:var(--accent3);border:1px solid rgba(6,239,180,0.18)}
+.s-promoted{background:rgba(245,158,11,0.10);color:var(--orange);border:1px solid rgba(245,158,11,0.18)}
+
+/* ── CGPA BAR ── */
+.cb{display:flex;align-items:center;gap:8px}
+.ct{flex:1;height:4px;background:var(--bg);border-radius:3px;overflow:hidden;min-width:40px}
+.cf{height:100%;border-radius:3px;transition:width .5s ease}
+.cv{font-family:'DM Mono',monospace;font-size:11.5px;font-weight:500;min-width:30px;text-align:right}
+
+/* ── AVATAR ── */
+.av{
+  width:34px;height:34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px;flex-shrink:0;
+}
+.av-f{background:linear-gradient(135deg,#f472b6,#ec4899)}
+.av-m{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.fs,.fi{
+  padding:8px 11px;
+  background:rgba(90,130,255,0.05);
+  border:1.5px solid var(--border2);
+  border-radius:9px;
+  color:var(--text);font-size:12.5px;
+  outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;
+}
+.fs:focus,.fi:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(90,130,255,0.10)}
+.fb{
+  padding:8px 14px;
+  background:rgba(90,130,255,0.09);
+  border:1px solid rgba(90,130,255,0.18);
+  border-radius:9px;
+  color:var(--accent);font-size:11.5px;font-weight:600;
+  cursor:pointer;transition:all .18s;
+}
+.fb:hover,.fb.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+
+/* ── MODAL ── */
+#modal{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+#modal.open{display:flex}
+.modal-box{
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:22px;
+  width:100%;max-width:820px;max-height:90vh;overflow-y:auto;
+  animation:mIn .24s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes mIn{from{opacity:0;transform:scale(.93) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-hd{
+  padding:22px 26px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  position:sticky;top:0;background:var(--bg2);z-index:2;
+  border-radius:22px 22px 0 0;
+}
+.modal-close{
+  width:30px;height:30px;background:rgba(240,82,95,0.09);
+  border:none;border-radius:7px;color:var(--red);cursor:pointer;
+  font-size:14px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .18s;
+}
+.modal-close:hover{background:rgba(240,82,95,0.20)}
+.modal-bd{padding:22px 26px}
+
+/* ── CHARTS ── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.chart-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r2);padding:18px;
+}
+.chart-card h3{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text)}
+.chart-wrap{position:relative;height:196px}
+
+/* ── NOTICE ── */
+.notice-item{
+  padding:16px;border:1px solid var(--border);border-radius:12px;
+  margin-bottom:11px;background:rgba(90,130,255,0.025);
+  transition:border-color .18s,transform .18s;
+}
+.notice-item:hover{border-color:var(--border2);transform:translateX(2px)}
+.ntag{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;
+}
+.notice-item h4{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:3px}
+.notice-item p{font-size:12.5px;color:var(--text2);line-height:1.6}
+.notice-date{font-size:10.5px;color:var(--text3);margin-top:8px}
+
+/* ── RANKER ── */
+.ri{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.ri:last-child{border-bottom:none}
+.rn{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;width:22px;text-align:center;color:var(--text3)}
+.rn.r1{color:var(--gold)}
+.rn.r2{color:#bfc8d6}
+.rn.r3{color:#c08b54}
+.rname{font-size:12.5px;font-weight:600;flex:1;color:var(--text)}
+.rid{font-size:10.5px;color:var(--text3)}
+
+/* ── GENDER DIST ── */
+.gender-wrap{display:flex;gap:11px;margin-top:12px}
+.gender-box{
+  flex:1;padding:13px;border-radius:11px;text-align:center;
+}
+.gm{background:rgba(90,130,255,0.07);border:1px solid rgba(90,130,255,0.13)}
+.gf{background:rgba(244,114,182,0.07);border:1px solid rgba(244,114,182,0.13)}
+.gv{font-family:'Playfair Display',serif;font-size:26px;font-weight:800}
+.gm .gv{color:var(--accent)}
+.gf .gv{color:#f472b6}
+.gl{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* ── SEM BARS ── */
+.sem-bars{display:flex;gap:8px;align-items:flex-end;height:110px;padding-top:8px}
+.sb-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.sb-bar{width:100%;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height .5s ease}
+.sb-lbl{font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace}
+.sb-val{font-size:9.5px;color:var(--accent);font-weight:600;font-family:'DM Mono',monospace}
+
+/* ── COURSE CHIP ── */
+.course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px}
+.course-chip{
+  padding:9px 11px;
+  background:rgba(90,130,255,0.04);
+  border:1px solid var(--border);border-radius:9px;
+}
+.course-chip .cc{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--accent);font-weight:500}
+.course-chip .cg{display:flex;align-items:center;justify-content:space-between;margin-top:3px}
+.course-chip .cr{font-size:10.5px;color:var(--text3)}
+
+/* ── SCROLL TO TOP ── */
+.scroll-top{
+  position:fixed;bottom:26px;right:26px;
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:10px;border:none;
+  color:#fff;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 4px 16px rgba(90,130,255,0.4);
+  transition:all .2s;z-index:200;
+  opacity:0;pointer-events:none;
+}
+.scroll-top.show{opacity:1;pointer-events:all}
+.scroll-top:hover{transform:translateY(-3px)}
+
+/* ── ABOUT ── */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.banner{
+  text-align:center;padding:36px 24px;
+  background:linear-gradient(135deg,rgba(90,130,255,0.06),rgba(139,92,246,0.06));
+  border:1px solid var(--border);border-radius:var(--r2);
+  grid-column:1/-1;
+}
+
+/* responsive */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .main{margin-left:0}
+  .topbar{left:0}
+  .charts-grid,.about-grid{grid-template-columns:1fr}
+  .banner{grid-column:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ INTRO ═══════════ -->
+<div id="introScreen">
+  <div class="intro-center">
+    <div class="intro-bup">
+      <span class="letter">B</span>
+      <span class="letter">U</span>
+      <span class="letter">P</span>
+    </div>
+    <div class="intro-tagline">Bangladesh University of Professionals</div>
+    <div class="intro-sub">Department of Computer Science &amp; Engineering</div>
+    <div class="intro-bar"><div class="intro-bar-fill"></div></div>
+    <div class="intro-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="loginScreen">
+  <div class="l-orb a"></div>
+  <div class="l-orb b"></div>
+  <div class="l-orb c"></div>
+  <div class="login-card">
+    <div class="login-institution">
+      <div class="login-badge">BUP</div>
+      <div class="login-inst-text">
+        <div class="t1">Bangladesh University of Professionals</div>
+        <div class="t2">Student Management System &nbsp;·&nbsp; CSE</div>
+      </div>
+    </div>
+    <div class="login-title">Admin Portal</div>
+    <div class="login-subtitle">Sign in to access the academic dashboard</div>
+
+    <div class="fl-group">
+      <input type="email" id="loginEmail" placeholder="Email" value="iftekharsourav75@gmail.com" autocomplete="username">
+      <label>Email Address</label>
+    </div>
+    <div class="fl-group has-toggle">
+      <input type="password" id="loginPass" placeholder="Password" value="pass107107" autocomplete="current-password">
+      <label>Password</label>
+      <button class="pw-toggle" type="button" id="pwToggle" onclick="togglePw()" title="Show/hide password">👁</button>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In &nbsp;→</button>
+    <div class="login-error" id="loginError">⚠ Invalid credentials. Please try again.</div>
+    <div class="login-footer">
+      Developed by <span>Ifthekhar Ahmed Sourav</span> &middot; BUP CSE
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ APP ═══════════ -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-icon">CSE</div>
+      <div class="sb-brand-text">
+        <div class="n1">BUP — CSE SMS</div>
+        <div class="n2">Code · Compete · Conquer</div>
+      </div>
+    </div>
+
+    <div class="nav-sec">
+      <div class="nav-sec-label">Overview</div>
+      <div class="nav-item active" onclick="showPage('dashboard',event)">
+        <span class="ni">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('students',event)">
+        <span class="ni">👥</span> All Students
+        <span class="nb" id="studentCount">77</span>
+      </div>
+      <div class="nav-item" onclick="showPage('results',event)">
+        <span class="ni">📋</span> Academic Results
+      </div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-sec-label">Analysis</div>
+      <div class="nav-item" onclick="showPage('performance',event)">
+        <span class="ni">📈</span> Performance
+      </div>
+      <div class="nav-item" onclick="showPage('rankings',event)">
+        <span class="ni">🏆</span> Rankings
+      </div>
+      <div class="nav-item" onclick="showPage('notices',event)">
+        <span class="ni">📢</span> Notices
+        <span class="nb">3</span>
+      </div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-sec-label">Department</div>
+      <div class="nav-item" onclick="showPage('about',event)">
+        <span class="ni">🏛️</span> About BUP CSE
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="av av-m">IA</div>
+        <div>
+          <div class="uf-name">Admin Panel</div>
+          <div class="uf-role">● System Administrator</div>
+          <div class="uf-email">iftekharsourav75@gmail.com</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">Dashboard</div>
+    <div class="topbar-search">
+      <span class="si">🔍</span>
+      <input type="text" placeholder="Search students..." oninput="globalSearch(this.value)" id="globalSearchInput">
+    </div>
+    <div class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌙</div>
+    <div class="logout-btn" onclick="doLogout()">Sign Out</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="ph">
+        <div class="bc">BUP CSE SMS <span>›</span> Dashboard</div>
+        <h1>Dashboard Overview</h1>
+        <p>Real-time academic intelligence — Department of CSE, Bangladesh University of Professionals</p>
+      </div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+        <div>
+          <div class="charts-grid">
+            <div class="chart-card"><h3>📊 CGPA Distribution</h3><div class="chart-wrap"><canvas id="cgpaDistChart"></canvas></div></div>
+            <div class="chart-card"><h3>📈 Semester-wise Avg GPA</h3><div class="chart-wrap"><canvas id="semAvgChart"></canvas></div></div>
+          </div>
+          <div class="sec">
+            <div class="sec-hd">
+              <div><div class="sec-title">🎓 Recent Students</div><div class="sec-sub">Latest enrolled students</div></div>
+              <div class="pill-btn" onclick="showPage('students',event)">View All →</div>
+            </div>
+            <div class="tw"><table id="recentTable"><thead><tr><th>#</th><th>Student</th><th>Session</th><th>CGPA</th><th>Status</th></tr></thead><tbody id="recentTbody"></tbody></table></div>
+          </div>
+        </div>
+        <div>
+          <div class="sec"><div class="sec-hd"><div><div class="sec-title">🏆 Top Performers</div></div></div><div id="topRankersList"></div></div>
+          <div class="sec" style="margin-top:18px">
+            <div class="sec-hd"><div><div class="sec-title">👥 Gender Distribution</div></div></div>
+            <div class="gender-wrap">
+              <div class="gender-box gm"><div class="gv" id="maleCount">—</div><div class="gl">Male Students</div></div>
+              <div class="gender-box gf"><div class="gv" id="femaleCount">—</div><div class="gl">Female Students</div></div>
+            </div>
+            <div class="chart-wrap" style="height:130px;margin-top:14px"><canvas id="genderChart"></canvas></div>
+          </div>
+          <div class="sec" style="margin-top:18px">
+            <div class="sec-hd"><div><div class="sec-title">📅 By Session</div></div></div>
+            <div class="chart-wrap" style="height:110px"><canvas id="sessionChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div class="page" id="page-students">
+      <div class="ph"><div class="bc">BUP CSE SMS <span>›</span> Students</div><h1>All Students</h1><p>Complete student registry with academic records</p></div>
+      <div class="filter-bar">
+        <input class="fi" type="text" placeholder="🔍 Search name / ID…" oninput="filterStudents()" id="stuSearch" style="flex:1;min-width:180px">
+        <select class="fs" onchange="filterStudents()" id="stuSession"><option value="">All Sessions</option><option value="2021-2022">2021–2022</option><option value="2022-2023">2022–2023</option></select>
+        <select class="fs" onchange="filterStudents()" id="stuSex"><option value="">All Genders</option><option value="M">Male</option><option value="F">Female</option></select>
+        <select class="fs" onchange="filterStudents()" id="stuStatus"><option value="">All Status</option><option value="Passed">Passed</option><option value="Promoted">Promoted</option></select>
+        <select class="fs" onchange="filterStudents()" id="stuSort"><option value="ser">Sort: Serial</option><option value="cgpa_desc">CGPA ↓</option><option value="cgpa_asc">CGPA ↑</option><option value="name">Name</option></select>
+      </div>
+      <div class="sec">
+        <div class="sec-hd"><div><div class="sec-title">Student Directory</div><div class="sec-sub" id="stuCount">Showing all students</div></div></div>
+        <div class="tw"><table><thead><tr><th>#</th><th>Student</th><th>Student ID</th><th>Session</th><th>Gender</th><th>CGPA</th><th>Status</th><th>Action</th></tr></thead><tbody id="studentsTbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="page" id="page-results">
+      <div class="ph"><div class="bc">BUP CSE SMS <span>›</span> Results</div><h1>Academic Results</h1><p>Semester-wise results and course grades</p></div>
+      <div class="filter-bar">
+        <input class="fi" type="text" placeholder="🔍 Search…" oninput="filterResults()" id="resSearch" style="flex:1;min-width:180px">
+        <select class="fs" onchange="filterResults()" id="resSession"><option value="">All Sessions</option><option value="2021-2022">2021–2022</option><option value="2022-2023">2022–2023</option></select>
+      </div>
+      <div class="sec"><div class="tw"><table><thead><tr><th>#</th><th>Student</th><th>Student ID</th><th>Sem 1</th><th>Sem 2</th><th>Sem 3</th><th>Sem 4</th><th>Sem 5</th><th>CGPA</th><th>Cr Earned</th><th>Status</th></tr></thead><tbody id="resultsTbody"></tbody></table></div></div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="page" id="page-performance">
+      <div class="ph"><div class="bc">BUP CSE SMS <span>›</span> Performance</div><h1>Academic Performance</h1><p>Comprehensive analytics and performance metrics</p></div>
+      <div class="stats-grid" id="perfStats"></div>
+      <div class="charts-grid">
+        <div class="chart-card"><h3>📊 CGPA Range Distribution</h3><div class="chart-wrap"><canvas id="perfChart1"></canvas></div></div>
+        <div class="chart-card"><h3>📈 GPA Trend by Semester</h3><div class="chart-wrap"><canvas id="perfChart2"></canvas></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div class="sec"><div class="sec-title" style="margin-bottom:14px">📉 Lowest Performing (CGPA)</div><div id="lowPerf"></div></div>
+        <div class="sec"><div class="sec-title" style="margin-bottom:14px">⭐ Highest Performing (CGPA)</div><div id="highPerf"></div></div>
+      </div>
+    </div>
+
+    <!-- RANKINGS -->
+    <div class="page" id="page-rankings">
+      <div class="ph"><div class="bc">BUP CSE SMS <span>›</span> Rankings</div><h1>Student Rankings</h1><p>Ranked by CGPA — Academic Excellence Board</p></div>
+      <div class="sec">
+        <div class="sec-hd"><div><div class="sec-title">🏆 Academic Merit List</div><div class="sec-sub">Ranked by Cumulative GPA (Descending)</div></div></div>
+        <div class="tw"><table><thead><tr><th>Rank</th><th>Student</th><th>Student ID</th><th>Session</th><th>CGPA</th><th>Credits Earned</th><th>Status</th></tr></thead><tbody id="rankingsTbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- NOTICES -->
+    <div class="page" id="page-notices">
+      <div class="ph"><div class="bc">BUP CSE SMS <span>›</span> Notices</div><h1>Department Notices</h1><p>Official announcements from CSE Department, BUP</p></div>
+      <div id="noticesList"></div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="page" id="page-about">
+      <div class="ph"><div class="bc">BUP CSE SMS <span>›</span> About</div><h1>About BUP — CSE</h1></div>
+      <div class="about-grid">
+        <div class="sec">
+          <div class="sec-title" style="margin-bottom:14px">🏛️ Department Overview</div>
+          <div style="color:var(--text2);font-size:13px;line-height:1.85">
+            <p style="margin-bottom:11px">The <strong style="color:var(--text)">Department of Computer Science and Engineering (CSE)</strong> at Bangladesh University of Professionals (BUP) is a premier technology department committed to producing world-class computing professionals.</p>
+            <p style="margin-bottom:11px">With our motto <em style="color:var(--accent)">"Code · Compete · Conquer"</em>, we foster innovation, critical thinking, and technical excellence.</p>
+            <p>Our curriculum bridges theoretical knowledge with practical industry demands, preparing graduates for leadership roles in the global tech ecosystem.</p>
+          </div>
+        </div>
+        <div class="sec"><div class="sec-title" style="margin-bottom:14px">📊 Department Statistics</div><div id="aboutStats"></div></div>
+        <div class="sec">
+          <div class="sec-title" style="margin-bottom:14px">👨‍🏫 Faculty</div>
+          <div style="color:var(--text2);font-size:13px;line-height:1.85">
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div class="av av-m">DF</div>
+              <div><div style="color:var(--text);font-weight:600">Department Faculty</div><div style="font-size:11px;color:var(--accent)">10 Dedicated Professors</div></div>
+            </div>
+            <p style="margin-top:11px">Our faculty comprises experienced academics and industry practitioners dedicated to academic excellence and student mentorship.</p>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-title" style="margin-bottom:14px">🎯 Academic Courses</div>
+          <div style="color:var(--text2);font-size:13px;line-height:1.85">
+            <p>The CSE curriculum offers <strong style="color:var(--text)">80 comprehensive courses</strong> spanning:</p>
+            <ul style="margin-top:10px;padding-left:18px;display:flex;flex-direction:column;gap:5px">
+              <li>Programming &amp; Software Development</li>
+              <li>Data Structures &amp; Algorithms</li>
+              <li>Computer Networks &amp; Security</li>
+              <li>Database Systems &amp; Management</li>
+              <li>Artificial Intelligence &amp; Machine Learning</li>
+              <li>Embedded Systems &amp; IoT</li>
+            </ul>
+          </div>
+        </div>
+        <div class="banner">
+          <div style="font-size:30px;margin-bottom:10px">🎓</div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:800;margin-bottom:5px">Bangladesh University of Professionals</div>
+          <div style="color:var(--accent);font-size:14px;font-weight:600;margin-bottom:3px">Department of Computer Science &amp; Engineering</div>
+          <div style="color:var(--text2);font-size:12px;font-style:italic">"Code • Compete • Conquer"</div>
+          <div style="margin-top:18px;font-size:11px;color:var(--text3)">SMS developed by <span style="color:var(--accent);font-weight:600">Ifthekhar Ahmed Sourav</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div id="modal">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-hd" id="modalHeader"></div>
+    <div class="modal-bd" id="modalBody"></div>
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA (unchanged)
+═══════════════════════════════════════════ */
+const STUDENTS = [{"ser":1,"reg_num":"104201220061","session":"2021-2022","student_id":"2252421061","name":"LUTFUL AHMED NADIM","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.19},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.15},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.22},{"sem":4,"enrolled":19.5,"earned":16.5,"gpa":2.61},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.3}],"total_enrolled":102.0,"total_earned":99.0,"cgpa":3.11,"status":"Promoted"},{"ser":2,"reg_num":"104201220086","session":"2021-2022","student_id":"2252421086","name":"MAINUL HASSAN ASIF","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"C","gp":2.25},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"D","gp":2.0},{"code":"CSE3106","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3107","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"C","gp":2.25},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.66},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.62},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.46},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.58},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":2.65}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":2.59,"status":"Passed"},{"ser":3,"reg_num":"104201220109","session":"2021-2022","student_id":"2252421109","name":"AFSANA HENA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.98},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.99},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":4.0},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.98},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":4.0}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.99,"status":"Passed"},{"ser":4,"reg_num":"104201220120","session":"2021-2022","student_id":"2252421120","name":"FARHAN ISHRAQ","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.93},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.07},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.23},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.44},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.33}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.2,"status":"Passed"},{"ser":5,"reg_num":"104201230001","session":"2022-2023","student_id":"23524202001","name":"M TASDIK MUTTAKI","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.54},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.55},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.66},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.63},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.7}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.62,"status":"Passed"},{"ser":6,"reg_num":"104201230014","session":"2022-2023","student_id":"23524202014","name":"AJWAD MOHTASIM","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3105","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.19},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.45},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.74},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.81},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.77}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.59,"status":"Passed"},{"ser":7,"reg_num":"104201230021","session":"2022-2023","student_id":"23524202021","name":"REHNUMA SALSABIL BINTE OBAYED","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.54},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.87},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.69},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.87},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.89}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.77,"status":"Passed"},{"ser":8,"reg_num":"104201230024","session":"2022-2023","student_id":"23524202024","name":"PRANABANTA SHETH SPONDON","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"B+","gp":3.25},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.89},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.54},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.76},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.68},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.61}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.69,"status":"Passed"},{"ser":9,"reg_num":"104201230028","session":"2022-2023","student_id":"23524202028","name":"MD. ZUNAYED IQBAL SHAHED","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3102","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.83},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.92},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.96},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.98},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.91}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.92,"status":"Passed"},{"ser":10,"reg_num":"104201230029","session":"2022-2023","student_id":"23524202029","name":"MISHA MALIHA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.76},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.91},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.76},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.9},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.89}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.85,"status":"Passed"},{"ser":11,"reg_num":"104201230030","session":"2022-2023","student_id":"23524202030","name":"SAJID-AL-ADEEB","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.93},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.92},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.93},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":4.0},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":4.0}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.95,"status":"Passed"},{"ser":12,"reg_num":"104201230041","session":"2022-2023","student_id":"23524202041","name":"MD. TAHMIDUR RAHMAN KHAN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0},{"code":"ICE2107","credits":3.0,"grade":"B-","gp":2.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.44},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.64},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.56},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.7},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.67}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.6,"status":"Passed"},{"ser":13,"reg_num":"104201230042","session":"2022-2023","student_id":"23524202042","name":"SHAHRIAR MAHMUD APURBO","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.99},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.16},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.65},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.54},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.72}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.41,"status":"Passed"},{"ser":14,"reg_num":"104201230043","session":"2022-2023","student_id":"23524202043","name":"FAIZA MUSTARI","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"AB","gp":0.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.74},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.95},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.1},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.38},{"sem":5,"enrolled":20.25,"earned":17.25,"gpa":3.57}],"total_enrolled":102.0,"total_earned":99.0,"cgpa":3.13,"status":"Promoted"},{"ser":15,"reg_num":"104201230044","session":"2022-2023","student_id":"23524202044","name":"SHAH MASROOR KABIR","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"C+","gp":2.5},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.83},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.76},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.84},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.88},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.38}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":2.94,"status":"Passed"},{"ser":16,"reg_num":"104201230045","session":"2022-2023","student_id":"23524202045","name":"GOLAM ALI KIBRIA","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"D","gp":2.0},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"C","gp":2.25},{"code":"CSE3105","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3106","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.12},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.09},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.2},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.07},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.05}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.11,"status":"Passed"},{"ser":17,"reg_num":"104201230047","session":"2022-2023","student_id":"23524202047","name":"MD. MAINUL ISLAM","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"D","gp":2.0},{"code":"CSE3103","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.39},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.64},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.52},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.33},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.38}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.45,"status":"Passed"},{"ser":18,"reg_num":"104201230048","session":"2022-2023","student_id":"23524202048","name":"AYSHA SIDDIKA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3106","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.0},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.28},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.43},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.51},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.34}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.31,"status":"Passed"},{"ser":19,"reg_num":"104201230049","session":"2022-2023","student_id":"23524202049","name":"MD.JONAEID KABIR SHANTO","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"C+","gp":2.5},{"code":"CSE3105","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3106","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.56},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.91},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.94},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.83},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.11}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":2.87,"status":"Passed"},{"ser":20,"reg_num":"104201230051","session":"2022-2023","student_id":"23524202051","name":"SAROWAR HOSSAIN RONY","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3102","credits":1.5,"grade":"D","gp":2.0},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.62},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.59},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.16},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.33},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.25}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.39,"status":"Passed"},{"ser":21,"reg_num":"104201230052","session":"2022-2023","student_id":"23524202052","name":"NUSAIR AHMED CHOWDHURY","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.32},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.86},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.81},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.91},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.89}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.76,"status":"Passed"},{"ser":22,"reg_num":"104201230054","session":"2022-2023","student_id":"23524202054","name":"ABDULLAH BIN TOWHID","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5},{"code":"PHY1115","credits":3.0,"grade":"B-","gp":2.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.46},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.91},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.02},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.37},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.69}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.09,"status":"Passed"},{"ser":23,"reg_num":"104201230059","session":"2022-2023","student_id":"23524202059","name":"TASHFIN RUAID","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"B-","gp":2.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.3},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.23},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.1},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.04},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.26}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.19,"status":"Passed"},{"ser":24,"reg_num":"104201230060","session":"2022-2023","student_id":"23524202060","name":"RUDRO ROY DIP","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.29},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.14},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.3},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.44},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.58}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.35,"status":"Passed"},{"ser":25,"reg_num":"104201230061","session":"2022-2023","student_id":"23524202061","name":"AL SADIQUE NUHIN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.76},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.12},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.42},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.22},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.54}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.21,"status":"Passed"},{"ser":26,"reg_num":"104201230062","session":"2022-2023","student_id":"23524202062","name":"MD. ABU SAYED","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"B-","gp":2.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.45},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.62},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.57},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.34},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.43}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.49,"status":"Passed"},{"ser":27,"reg_num":"104201230064","session":"2022-2023","student_id":"23524202064","name":"UMME HANI PUNAM","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.81},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.86},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.93},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.88},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.92}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.88,"status":"Passed"},{"ser":28,"reg_num":"104201230065","session":"2022-2023","student_id":"23524202065","name":"MD. JUNAYET HOSSAIN MOHIT","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.94},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.64},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.88},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.81},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.81}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.81,"status":"Passed"},{"ser":29,"reg_num":"104201230068","session":"2022-2023","student_id":"23524202068","name":"MD. MARUF ALL RUSHAFI","sex":"M","batch":2,"courses":[{"code":"CSE2103","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3101","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3102","credits":1.5,"grade":"C+","gp":2.5},{"code":"CSE3103","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3104","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3105","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.3},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.21},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.19},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.27},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.06}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.2,"status":"Passed"},{"ser":30,"reg_num":"104201230070","session":"2022-2023","student_id":"23524202070","name":"MD. ABU ZIHAD","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.8},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.9},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.93},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.81},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.96}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.88,"status":"Passed"},{"ser":31,"reg_num":"104201230071","session":"2022-2023","student_id":"23524202071","name":"MARJIA KHATUN","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.89},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.93},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.86},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.98},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.93}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.92,"status":"Passed"},{"ser":32,"reg_num":"104201230075","session":"2022-2023","student_id":"23524202075","name":"ABDULLAH AL - YAMIN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3102","credits":1.5,"grade":"C+","gp":2.5},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.81},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.92},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.96},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.82},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.48}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.8,"status":"Passed"},{"ser":33,"reg_num":"104201230085","session":"2022-2023","student_id":"23524202085","name":"ABDULLAH MAHMUD YAMIN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.8},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.74},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.56},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.48},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.71}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.66,"status":"Passed"},{"ser":34,"reg_num":"104201230088","session":"2022-2023","student_id":"23524202088","name":"TASNIM RASHID MEDHA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.76},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.9},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.69},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.85},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.85}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.81,"status":"Passed"},{"ser":35,"reg_num":"104201230089","session":"2022-2023","student_id":"23524202089","name":"SUMAIYA HOSSAIN ANIKA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.11},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.58},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.66},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.95},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.91}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.64,"status":"Passed"},{"ser":36,"reg_num":"104201230091","session":"2022-2023","student_id":"23524202091","name":"MD. RAISUL ISLAM","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"C+","gp":2.5},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"C+","gp":2.5},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.44},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.16},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.44},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.38},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.35}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.35,"status":"Passed"},{"ser":37,"reg_num":"104201230095","session":"2022-2023","student_id":"23524202095","name":"SM SHAHRIER EMON","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"D","gp":2.0},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"D","gp":2.0},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.56},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.77},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.83},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.91},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.17}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":2.85,"status":"Passed"},{"ser":38,"reg_num":"104201230096","session":"2022-2023","student_id":"23524202096","name":"MD. RIFAT AL HASSAN ROMAN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"C","gp":2.25},{"code":"CSE3105","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.07},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.0},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.93},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.15},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.32}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.09,"status":"Passed"},{"ser":39,"reg_num":"104201230100","session":"2022-2023","student_id":"23524202100","name":"ABRAR ZAHIN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.91},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.97},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.99},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":4.0},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":4.0}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.97,"status":"Passed"},{"ser":40,"reg_num":"104201230103","session":"2022-2023","student_id":"23524202103","name":"FARHAN ISRAQ JAMI","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.79},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.91},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.56},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.79},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.79}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.77,"status":"Passed"},{"ser":41,"reg_num":"104201230104","session":"2022-2023","student_id":"23524202104","name":"DEWAN SOWAIB SADIF","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"C","gp":2.25},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"B+","gp":3.25},{"code":"CSE3109","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.25},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.79},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.84},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.49},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":2.93}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":2.86,"status":"Passed"},{"ser":42,"reg_num":"104201230107","session":"2022-2023","student_id":"23524202107","name":"IFTHEKHAR AHMED","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.14},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.28},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.31},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.26},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.68}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.33,"status":"Passed"},{"ser":43,"reg_num":"104201230108","session":"2022-2023","student_id":"23524202108","name":"SHEIKH SIFAT RAHMAN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.74},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.93},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.91},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.83},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.98}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.88,"status":"Passed"},{"ser":44,"reg_num":"104201230109","session":"2022-2023","student_id":"23524202109","name":"SHREYA SARKER","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.96},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.96},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.87},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.98},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.96}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.95,"status":"Passed"},{"ser":45,"reg_num":"104201230110","session":"2022-2023","student_id":"23524202110","name":"TAQI TAHMID","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.53},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.31},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.18},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.68},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.64}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.46,"status":"Passed"},{"ser":46,"reg_num":"104201230112","session":"2022-2023","student_id":"23524202112","name":"MD. MASUM MEHORAB","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"C+","gp":2.5},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"C","gp":2.25},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25},{"code":"MATH2111","credits":3.0,"grade":"D","gp":2.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.33},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.11},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.93},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.13},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.29}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.16,"status":"Passed"},{"ser":47,"reg_num":"104201230114","session":"2022-2023","student_id":"23524202114","name":"M. SABBIR HASNAT SHAON","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.16},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.47},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.38},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.37},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.78}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.43,"status":"Passed"},{"ser":48,"reg_num":"104201230116","session":"2022-2023","student_id":"23524202116","name":"M SAIMOON GALIB","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.07},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.09},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.94},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.02},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.34}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.09,"status":"Passed"},{"ser":49,"reg_num":"104201230117","session":"2022-2023","student_id":"23524202117","name":"MD.MUSFIQUR RAHMAN SAMA","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.63},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.67},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.31},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.41},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.6}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.53,"status":"Passed"},{"ser":50,"reg_num":"104201230118","session":"2022-2023","student_id":"23524202118","name":"OVIZIT DUTT OVI","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.67},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.68},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.75},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.88},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.95}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.78,"status":"Passed"},{"ser":51,"reg_num":"104201230119","session":"2022-2023","student_id":"23524202119","name":"MD. MEHEDI HASAN FOYSAL","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.37},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.25},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.14},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.11},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.4}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.25,"status":"Passed"},{"ser":52,"reg_num":"104201230121","session":"2022-2023","student_id":"23524202121","name":"MIHIR BORMON","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"B-","gp":2.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.11},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.63},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.43},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.39},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.71}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.46,"status":"Passed"},{"ser":53,"reg_num":"104201230122","session":"2022-2023","student_id":"23524202122","name":"SUMEHRA AFSHEEN NUHAA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"D","gp":2.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.49},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.74},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.62},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.65},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.47}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.6,"status":"Passed"},{"ser":54,"reg_num":"104201230123","session":"2022-2023","student_id":"23524202123","name":"JANNATUL SHANJIMOM AURPY","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.28},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.4},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.38},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.46},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.44}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.39,"status":"Passed"},{"ser":55,"reg_num":"104201230124","session":"2022-2023","student_id":"23524202124","name":"MD. TAMJID AHMAD EMON","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.07},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.95},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.88},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.08},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.67}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.13,"status":"Passed"},{"ser":56,"reg_num":"104201230125","session":"2022-2023","student_id":"23524202125","name":"RAIHANUL HASAN KHAN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.74},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.54},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.38},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.41},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.57}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.53,"status":"Passed"},{"ser":57,"reg_num":"104201230126","session":"2022-2023","student_id":"23524202126","name":"SHAZZAD HOSSAN LABIB","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3102","credits":1.5,"grade":"C+","gp":2.5},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"C","gp":2.25},{"code":"CSE3105","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.9},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.18},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.91},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.69},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":2.81}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":2.9,"status":"Passed"},{"ser":58,"reg_num":"104201230129","session":"2022-2023","student_id":"23524202129","name":"ABDUL HAKIM SHIFAT","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.35},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.53},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.44},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.41},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.51}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.45,"status":"Passed"},{"ser":59,"reg_num":"104201230130","session":"2022-2023","student_id":"23524202130","name":"TAMIM SHARIAR","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3102","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.46},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.97},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.06},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.14},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.19}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.16,"status":"Passed"},{"ser":60,"reg_num":"104201230131","session":"2022-2023","student_id":"23524202131","name":"TOWFIQ OMAR RAKIN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3102","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.59},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.81},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.77},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.92},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.93}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.8,"status":"Passed"},{"ser":61,"reg_num":"104201230133","session":"2022-2023","student_id":"23524202133","name":"TAHIA ZAIMA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.11},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.28},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.33},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.6},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.63}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.39,"status":"Passed"},{"ser":62,"reg_num":"104201230134","session":"2022-2023","student_id":"23524202134","name":"TABIDA AHMED SUMAIYA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"B+","gp":3.25},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.08},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.74},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.19},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.34},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.28}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.12,"status":"Passed"},{"ser":63,"reg_num":"104201230135","session":"2022-2023","student_id":"23524202135","name":"ABID HASAN ZIDEN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B+","gp":3.25},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.44},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.6},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.31},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.67},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.76}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.56,"status":"Passed"},{"ser":64,"reg_num":"104201230136","session":"2022-2023","student_id":"23524202136","name":"MST. REBEKA SULTANA ORCE","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3102","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3103","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3104","credits":0.75,"grade":"C+","gp":2.5},{"code":"CSE3105","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.76},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.94},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.27},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.09},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.31}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.07,"status":"Passed"},{"ser":65,"reg_num":"104201230137","session":"2022-2023","student_id":"23524202137","name":"MASHRAFI ELAHI","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3104","credits":0.75,"grade":"B+","gp":3.25},{"code":"CSE3105","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3106","credits":1.5,"grade":"B+","gp":3.25},{"code":"CSE3107","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.04},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.95},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.11},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.13},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.09}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.06,"status":"Passed"},{"ser":66,"reg_num":"104201230138","session":"2022-2023","student_id":"23524202138","name":"SUMAIYA BINTA SHAMS","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"F","gp":0.0},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3108","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3109","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5},{"code":"ICE2107","credits":3.0,"grade":"D","gp":2.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.15},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.49},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.6},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.79},{"sem":5,"enrolled":20.25,"earned":17.25,"gpa":3.01}],"total_enrolled":102.0,"total_earned":99.0,"cgpa":2.8,"status":"Promoted"},{"ser":67,"reg_num":"104201230139","session":"2022-2023","student_id":"23524202139","name":"ZARIN TASNIM RAHMAN TULY","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.84},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.19},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.32},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.3},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.33}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.2,"status":"Passed"},{"ser":68,"reg_num":"104201230140","session":"2022-2023","student_id":"23524202140","name":"MST. SUMAIYA AKTER","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"C+","gp":2.5},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3108","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3109","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.87},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.02},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.14},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.26},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.53}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.16,"status":"Passed"},{"ser":69,"reg_num":"104201230141","session":"2022-2023","student_id":"23524202141","name":"MD. ALVEE AHNAF KHAN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.39},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.29},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.26},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.16},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":2.91}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.2,"status":"Passed"},{"ser":70,"reg_num":"104201230142","session":"2022-2023","student_id":"23524202142","name":"MST. ANIKA RAHAT SHIPLA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"C+","gp":2.5},{"code":"CSE3103","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3106","credits":1.5,"grade":"A","gp":3.75},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25},{"code":"ICE2107","credits":3.0,"grade":"AB","gp":0.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.24},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.9},{"sem":3,"enrolled":20.25,"earned":17.25,"gpa":3.08},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.54},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":2.98}],"total_enrolled":102.0,"total_earned":99.0,"cgpa":2.95,"status":"Promoted"},{"ser":71,"reg_num":"104201230143","session":"2022-2023","student_id":"23524202143","name":"SHAHED SHAHRIER","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3104","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3110","credits":0.75,"grade":"A","gp":3.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.17},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.51},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.5},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.51},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.48}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.43,"status":"Passed"},{"ser":72,"reg_num":"104201230145","session":"2022-2023","student_id":"23524202145","name":"NUZHAT SAIMA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3102","credits":1.5,"grade":"B","gp":3.0},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A-","gp":3.5},{"code":"CSE3105","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":3.34},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.75},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.69},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.79},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.54}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.62,"status":"Passed"},{"ser":73,"reg_num":"104201230146","session":"2022-2023","student_id":"23524202146","name":"NAFIZ AL ANJIM AHMED","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3104","credits":0.75,"grade":"B","gp":3.0},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"B+","gp":3.25},{"code":"PHY1115","credits":3.0,"grade":"B-","gp":2.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.85},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.74},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.78},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.03},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.32}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":2.94,"status":"Passed"},{"ser":74,"reg_num":"104201230147","session":"2022-2023","student_id":"23524202147","name":"MEHAR NIGAR ANONNA","sex":"F","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3102","credits":1.5,"grade":"B-","gp":2.75},{"code":"CSE3103","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3104","credits":0.75,"grade":"B-","gp":2.75},{"code":"CSE3105","credits":3.0,"grade":"C","gp":2.25},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"C+","gp":2.5},{"code":"CSE3110","credits":0.75,"grade":"B-","gp":2.75}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.57},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.68},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":2.8},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.76},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":2.84}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":2.73,"status":"Passed"},{"ser":75,"reg_num":"104201230148","session":"2022-2023","student_id":"23524202148","name":"MD. ABID REJWAN","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"A","gp":3.75},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"A+","gp":4.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.98},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.91},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.2},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.38},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.44}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.17,"status":"Passed"},{"ser":76,"reg_num":"104201230149","session":"2022-2023","student_id":"23524202149","name":"MD. SHOAIB","sex":"M","batch":2,"courses":[{"code":"CSE3101","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3102","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"B+","gp":3.25},{"code":"CSE3105","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3106","credits":1.5,"grade":"A+","gp":4.0},{"code":"CSE3107","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3108","credits":0.75,"grade":"A","gp":3.75},{"code":"CSE3109","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3110","credits":0.75,"grade":"A-","gp":3.5}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.79},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":2.94},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.31},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":3.49},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.46}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.19,"status":"Passed"},{"ser":77,"reg_num":"104201230151","session":"2022-2023","student_id":"23524202151","name":"MD. TAHMID ALAM","sex":"M","batch":2,"courses":[{"code":"CSE2103","credits":3.0,"grade":"AB","gp":0.0},{"code":"CSE3101","credits":3.0,"grade":"B","gp":3.0},{"code":"CSE3102","credits":1.5,"grade":"C","gp":2.25},{"code":"CSE3103","credits":3.0,"grade":"A+","gp":4.0},{"code":"CSE3104","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3105","credits":3.0,"grade":"A-","gp":3.5},{"code":"CSE3106","credits":1.5,"grade":"A-","gp":3.5},{"code":"CSE3107","credits":3.0,"grade":"B+","gp":3.25},{"code":"CSE3108","credits":0.75,"grade":"A+","gp":4.0},{"code":"CSE3109","credits":3.0,"grade":"B-","gp":2.75},{"code":"CSE3110","credits":0.75,"grade":"B","gp":3.0}],"semesters":[{"sem":1,"enrolled":20.25,"earned":20.25,"gpa":2.68},{"sem":2,"enrolled":21.75,"earned":21.75,"gpa":3.19},{"sem":3,"enrolled":20.25,"earned":20.25,"gpa":3.05},{"sem":4,"enrolled":19.5,"earned":19.5,"gpa":2.84},{"sem":5,"enrolled":20.25,"earned":20.25,"gpa":3.28}],"total_enrolled":102.0,"total_earned":102.0,"cgpa":3.01,"status":"Passed"}];
+
+/* ═══════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════ */
+function gradeClass(g){
+  if(g==='A+') return 'g-ap';
+  if(g==='A')  return 'g-a';
+  if(g==='A-') return 'g-am';
+  if(g==='B+') return 'g-bp';
+  if(g==='B')  return 'g-b';
+  if(g==='B-') return 'g-bm';
+  if(['C+','C','C-','D'].includes(g)) return 'g-low';
+  return 'g-f';
+}
+function cgpaColor(c){
+  if(c>=3.75) return 'var(--accent3)';
+  if(c>=3.5)  return 'var(--accent)';
+  if(c>=3.0)  return 'var(--orange)';
+  return 'var(--red)';
+}
+function initials(name){
+  return name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+}
+
+/* ═══════════════════════════════════════════
+   INTRO → LOGIN
+═══════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('introScreen').classList.add('intro-exit');
+    setTimeout(()=>{
+      document.getElementById('introScreen').style.display='none';
+      const ls=document.getElementById('loginScreen');
+      ls.classList.add('visible','fadeIn');
+    },600);
+  },2800);
+});
+
+/* ═══════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════ */
+function togglePw(){
+  const inp=document.getElementById('loginPass');
+  const btn=document.getElementById('pwToggle');
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+  else{inp.type='password';btn.textContent='👁';}
+}
+function doLogin(){
+  const e=document.getElementById('loginEmail').value.trim();
+  const p=document.getElementById('loginPass').value.trim();
+  const err=document.getElementById('loginError');
+  if(e==='iftekharsourav75@gmail.com'&&p==='pass107107'){
+    document.getElementById('loginScreen').classList.remove('visible');
+    setTimeout(()=>{
+      const app=document.getElementById('app');
+      app.classList.add('visible');
+      initApp();
+    },300);
+  } else {
+    err.classList.add('show');
+    setTimeout(()=>err.classList.remove('show'),3000);
+  }
+}
+document.getElementById('loginPass').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin()});
+function doLogout(){
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('app').style.display='none';
+  setTimeout(()=>{
+    document.getElementById('app').style.display='';
+    const ls=document.getElementById('loginScreen');
+    ls.classList.add('visible','fadeIn');
+  },300);
+}
+
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
+function showPage(id,event){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(event&&event.currentTarget) event.currentTarget.classList.add('active');
+  const titles={dashboard:'Dashboard',students:'All Students',results:'Academic Results',performance:'Performance Analysis',rankings:'Merit Rankings',notices:'Department Notices',about:'About BUP CSE'};
+  document.getElementById('topbarTitle').textContent=titles[id]||id;
+}
+
+/* ═══════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════ */
+let charts={};
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+const isDark=()=>document.documentElement.getAttribute('data-theme')!=='light';
+const gc=()=>isDark()?'rgba(90,130,255,0.07)':'rgba(90,130,255,0.09)';
+const tc=()=>isDark()?'#7a87a8':'#4b5680';
+
+function initApp(){
+  buildStats();
+  buildCharts();
+  buildRecentTable();
+  buildTopRankers();
+  buildStudentsTable();
+  buildResultsTable();
+  buildRankings();
+  buildPerformance();
+  buildNotices();
+  buildAbout();
+}
+
+function buildStats(){
+  const cgpas=STUDENTS.map(s=>s.cgpa).filter(Boolean);
+  const avg=(cgpas.reduce((a,b)=>a+b,0)/cgpas.length).toFixed(2);
+  const male=STUDENTS.filter(s=>s.sex==='M').length;
+  const female=STUDENTS.filter(s=>s.sex==='F').length;
+  const passed=STUDENTS.filter(s=>s.status==='Passed').length;
+  const promoted=STUDENTS.filter(s=>s.status==='Promoted').length;
+  document.getElementById('maleCount').textContent=male;
+  document.getElementById('femaleCount').textContent=female;
+  document.getElementById('studentCount').textContent=STUDENTS.length;
+
+  const stats=[
+    {icon:'👥',val:STUDENTS.length,label:'Total Students',sub:'Batch 2 · Active',grad:'linear-gradient(90deg,var(--accent),var(--accent2))',bg:'rgba(90,130,255,0.09)'},
+    {icon:'📚',val:80,label:'Total Courses',sub:'CSE Curriculum',grad:'linear-gradient(90deg,var(--accent3),var(--accent))',bg:'rgba(6,239,180,0.09)'},
+    {icon:'👨‍🏫',val:10,label:'Total Teachers',sub:'Expert Faculty',grad:'linear-gradient(90deg,var(--orange),#f472b6)',bg:'rgba(245,158,11,0.09)'},
+    {icon:'⭐',val:avg,label:'Avg. CGPA',sub:`Max: ${Math.max(...cgpas).toFixed(2)}`,grad:'linear-gradient(90deg,var(--gold),var(--orange))',bg:'rgba(245,200,66,0.09)'},
+    {icon:'✅',val:passed,label:'Passed',sub:`${((passed/STUDENTS.length)*100).toFixed(1)}% pass rate`,grad:'linear-gradient(90deg,var(--accent3),var(--accent))',bg:'rgba(6,239,180,0.09)'},
+    {icon:'🔄',val:promoted,label:'Promoted',sub:'Need supplementary',grad:'linear-gradient(90deg,var(--orange),var(--red))',bg:'rgba(245,158,11,0.09)'},
+  ];
+  document.getElementById('statsGrid').innerHTML=stats.map(s=>`
+    <div class="stat-card" style="--sc-grad:${s.grad}">
+      <div class="sc-icon" style="background:${s.bg}">${s.icon}</div>
+      <div class="sc-val">${s.val}</div>
+      <div class="sc-label">${s.label}</div>
+      <div class="sc-sub">${s.sub}</div>
+    </div>`).join('');
+
+  const perfStats=[
+    {icon:'📊',val:avg,label:'Dept Avg CGPA',sub:'All semesters'},
+    {icon:'🏆',val:Math.max(...cgpas).toFixed(2),label:'Highest CGPA',sub:STUDENTS.find(s=>s.cgpa===Math.max(...cgpas))?.name||''},
+    {icon:'📉',val:Math.min(...cgpas).toFixed(2),label:'Lowest CGPA',sub:STUDENTS.find(s=>s.cgpa===Math.min(...cgpas))?.name||''},
+    {icon:'🎯',val:STUDENTS.filter(s=>s.cgpa>=3.5).length,label:'Distinction (≥3.5)',sub:'High achievers'},
+  ];
+  document.getElementById('perfStats').innerHTML=perfStats.map(s=>`
+    <div class="stat-card">
+      <div class="sc-icon" style="background:rgba(90,130,255,0.09)">${s.icon}</div>
+      <div class="sc-val">${s.val}</div>
+      <div class="sc-label">${s.label}</div>
+      <div class="sc-sub">${s.sub}</div>
+    </div>`).join('');
+}
+
+function buildCharts(){
+  const bins=[0,0,0,0,0];
+  STUDENTS.forEach(s=>{
+    if(!s.cgpa) return;
+    if(s.cgpa>=3.75) bins[0]++;
+    else if(s.cgpa>=3.5) bins[1]++;
+    else if(s.cgpa>=3.0) bins[2]++;
+    else if(s.cgpa>=2.5) bins[3]++;
+    else bins[4]++;
+  });
+  destroyChart('cgpaDist');
+  charts.cgpaDist=new Chart(document.getElementById('cgpaDistChart'),{
+    type:'bar',
+    data:{labels:['3.75–4.0','3.5–3.74','3.0–3.49','2.5–2.99','<2.5'],
+      datasets:[{data:bins,backgroundColor:['rgba(6,239,180,.65)','rgba(90,130,255,.65)','rgba(245,158,11,.65)','rgba(240,82,95,.5)','rgba(240,82,95,.3)'],borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:gc()},ticks:{color:tc(),font:{size:10}}},y:{grid:{color:gc()},ticks:{color:tc(),font:{size:10},stepSize:1}}}}
+  });
+
+  const semAvgs=[1,2,3,4,5].map(s=>{
+    const gpas=STUDENTS.flatMap(st=>st.semesters.filter(sm=>sm.sem===s).map(sm=>sm.gpa)).filter(Boolean);
+    return gpas.length?(gpas.reduce((a,b)=>a+b,0)/gpas.length).toFixed(2):0;
+  });
+  destroyChart('semAvg');
+  charts.semAvg=new Chart(document.getElementById('semAvgChart'),{
+    type:'line',
+    data:{labels:['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5'],
+      datasets:[{data:semAvgs,borderColor:'#5a82ff',backgroundColor:'rgba(90,130,255,.10)',borderWidth:2,pointRadius:5,fill:true,tension:0.4,pointBackgroundColor:'#5a82ff',pointBorderColor:'#fff',pointBorderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:gc()},ticks:{color:tc(),font:{size:10}}},y:{grid:{color:gc()},ticks:{color:tc(),font:{size:10}},min:2.5,max:4}}}
+  });
+
+  const m=STUDENTS.filter(s=>s.sex==='M').length;
+  const f=STUDENTS.filter(s=>s.sex==='F').length;
+  destroyChart('gender');
+  charts.gender=new Chart(document.getElementById('genderChart'),{
+    type:'doughnut',
+    data:{labels:['Male','Female'],datasets:[{data:[m,f],backgroundColor:['rgba(90,130,255,.7)','rgba(244,114,182,.7)'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:tc(),font:{size:11},boxWidth:12,padding:12}}},cutout:'62%'}
+  });
+
+  const s1=STUDENTS.filter(s=>s.session==='2021-2022').length;
+  const s2=STUDENTS.filter(s=>s.session==='2022-2023').length;
+  destroyChart('session');
+  charts.session=new Chart(document.getElementById('sessionChart'),{
+    type:'bar',
+    data:{labels:['2021–2022','2022–2023'],datasets:[{data:[s1,s2],backgroundColor:['rgba(90,130,255,.65)','rgba(139,92,246,.65)'],borderRadius:8,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:gc()},ticks:{color:tc(),font:{size:10}}},y:{grid:{color:gc()},ticks:{color:tc(),font:{size:10},stepSize:10}}}}
+  });
+
+  destroyChart('perf1');
+  charts.perf1=new Chart(document.getElementById('perfChart1'),{
+    type:'pie',
+    data:{labels:['Excellent (≥3.75)','Very Good (3.5–3.74)','Good (3.0–3.49)','Average (2.5–2.99)','<2.5'],
+      datasets:[{data:bins,backgroundColor:['rgba(6,239,180,.7)','rgba(90,130,255,.7)','rgba(245,158,11,.7)','rgba(240,82,95,.55)','rgba(240,82,95,.3)'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:tc(),font:{size:10},boxWidth:10,padding:8}}}}
+  });
+
+  destroyChart('perf2');
+  charts.perf2=new Chart(document.getElementById('perfChart2'),{
+    type:'line',
+    data:{labels:['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5'],
+      datasets:[
+        {label:'Avg GPA',data:semAvgs,borderColor:'#5a82ff',backgroundColor:'rgba(90,130,255,.09)',borderWidth:2,fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#5a82ff'},
+        {label:'Max GPA',data:[1,2,3,4,5].map(s=>{
+          const gpas=STUDENTS.flatMap(st=>st.semesters.filter(sm=>sm.sem===s).map(sm=>sm.gpa)).filter(Boolean);
+          return gpas.length?Math.max(...gpas).toFixed(2):0;
+        }),borderColor:'#06efb4',borderWidth:2,borderDash:[5,3],pointRadius:3,fill:false,tension:0.4}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:tc(),font:{size:11},boxWidth:12}}},
+      scales:{x:{grid:{color:gc()},ticks:{color:tc(),font:{size:10}}},y:{grid:{color:gc()},ticks:{color:tc(),font:{size:10}},min:2,max:4.1}}}
+  });
+}
+
+function buildRecentTable(){
+  const sorted=[...STUDENTS].sort((a,b)=>b.ser-a.ser).slice(0,8);
+  document.getElementById('recentTbody').innerHTML=sorted.map(s=>`
+    <tr onclick="openModal(${s.ser-1})">
+      <td>${s.ser}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="av av-${s.sex.toLowerCase()}">${initials(s.name)}</div>
+          <div><div style="font-weight:600;color:var(--text);font-size:12.5px">${s.name}</div>
+          <div style="font-size:10.5px;color:var(--text3)">${s.student_id}</div></div>
+        </div>
+      </td>
+      <td>${s.session}</td>
+      <td>
+        <div class="cb">
+          <div class="ct"><div class="cf" style="width:${(s.cgpa/4)*100}%;background:${cgpaColor(s.cgpa)}"></div></div>
+          <span class="cv" style="color:${cgpaColor(s.cgpa)}">${s.cgpa||'—'}</span>
+        </div>
+      </td>
+      <td><span class="status s-${s.status.toLowerCase()}">● ${s.status}</span></td>
+    </tr>`).join('');
+}
+
+function buildTopRankers(){
+  const sorted=[...STUDENTS].sort((a,b)=>b.cgpa-a.cgpa).slice(0,8);
+  document.getElementById('topRankersList').innerHTML=sorted.map((s,i)=>`
+    <div class="ri">
+      <div class="rn ${i<3?'r'+(i+1):''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)}</div>
+      <div class="av av-${s.sex.toLowerCase()}" style="width:30px;height:30px;font-size:10.5px">${initials(s.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="rname">${s.name}</div>
+        <div class="rid">${s.student_id}</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;color:${cgpaColor(s.cgpa)}">${s.cgpa}</div>
+    </div>`).join('');
+}
+
+let filteredStudents=[...STUDENTS];
+function buildStudentsTable(data){
+  data=data||filteredStudents;
+  document.getElementById('stuCount').textContent=`Showing ${data.length} of ${STUDENTS.length} students`;
+  document.getElementById('studentsTbody').innerHTML=data.map(s=>`
+    <tr onclick="openModal(${STUDENTS.indexOf(s)})">
+      <td>${s.ser}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="av av-${s.sex.toLowerCase()}">${initials(s.name)}</div>
+          <div><div style="font-weight:600;color:var(--text)">${s.name}</div>
+          <div style="font-size:10.5px;color:var(--text3)">${s.reg_num}</div></div>
+        </div>
+      </td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:11.5px;color:var(--accent)">${s.student_id}</span></td>
+      <td>${s.session}</td>
+      <td><span style="color:${s.sex==='F'?'#f472b6':'var(--accent)'}">${s.sex==='F'?'♀ Female':'♂ Male'}</span></td>
+      <td>
+        <div class="cb">
+          <div class="ct"><div class="cf" style="width:${(s.cgpa/4)*100}%;background:${cgpaColor(s.cgpa)}"></div></div>
+          <span class="cv" style="color:${cgpaColor(s.cgpa)}">${s.cgpa||'—'}</span>
+        </div>
+      </td>
+      <td><span class="status s-${s.status.toLowerCase()}">● ${s.status}</span></td>
+      <td><button onclick="event.stopPropagation();openModal(${STUDENTS.indexOf(s)})" style="padding:4px 11px;background:rgba(90,130,255,0.09);border:1px solid rgba(90,130,255,0.18);border-radius:7px;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;transition:all .18s" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='rgba(90,130,255,0.09)';this.style.color='var(--accent)'">View</button></td>
+    </tr>`).join('');
+}
+function filterStudents(){
+  const q=document.getElementById('stuSearch').value.toLowerCase();
+  const sess=document.getElementById('stuSession').value;
+  const sex=document.getElementById('stuSex').value;
+  const status=document.getElementById('stuStatus').value;
+  const sort=document.getElementById('stuSort').value;
+  filteredStudents=STUDENTS.filter(s=>{
+    if(q&&!s.name.toLowerCase().includes(q)&&!s.student_id.includes(q)) return false;
+    if(sess&&s.session!==sess) return false;
+    if(sex&&s.sex!==sex) return false;
+    if(status&&s.status!==status) return false;
+    return true;
+  });
+  if(sort==='cgpa_desc') filteredStudents.sort((a,b)=>b.cgpa-a.cgpa);
+  else if(sort==='cgpa_asc') filteredStudents.sort((a,b)=>a.cgpa-b.cgpa);
+  else if(sort==='name') filteredStudents.sort((a,b)=>a.name.localeCompare(b.name));
+  else filteredStudents.sort((a,b)=>a.ser-b.ser);
+  buildStudentsTable(filteredStudents);
+}
+
+let filteredResults=[...STUDENTS];
+function buildResultsTable(data){
+  data=data||filteredResults;
+  document.getElementById('resultsTbody').innerHTML=data.map(s=>`
+    <tr onclick="openModal(${STUDENTS.indexOf(s)})">
+      <td>${s.ser}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="av av-${s.sex.toLowerCase()}" style="width:28px;height:28px;font-size:10px">${initials(s.name)}</div>
+          <span style="font-weight:600;font-size:12px">${s.name}</span>
+        </div>
+      </td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)">${s.student_id}</span></td>
+      ${[1,2,3,4,5].map(n=>{const sem=s.semesters.find(sm=>sm.sem===n);return sem?`<td><span style="font-family:'DM Mono',monospace;font-size:11.5px;color:${cgpaColor(sem.gpa)}">${sem.gpa}</span></td>`:'<td style="color:var(--text3)">—</td>';}).join('')}
+      <td><span style="font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;color:${cgpaColor(s.cgpa)}">${s.cgpa}</span></td>
+      <td style="font-size:11.5px;color:var(--text2)">${s.total_earned}/${s.total_enrolled}</td>
+      <td><span class="status s-${s.status.toLowerCase()}">● ${s.status}</span></td>
+    </tr>`).join('');
+}
+function filterResults(){
+  const q=document.getElementById('resSearch').value.toLowerCase();
+  const sess=document.getElementById('resSession').value;
+  filteredResults=STUDENTS.filter(s=>{
+    if(q&&!s.name.toLowerCase().includes(q)&&!s.student_id.includes(q)) return false;
+    if(sess&&s.session!==sess) return false;
+    return true;
+  });
+  buildResultsTable(filteredResults);
+}
+
+function buildRankings(){
+  const ranked=[...STUDENTS].sort((a,b)=>b.cgpa-a.cgpa);
+  document.getElementById('rankingsTbody').innerHTML=ranked.map((s,i)=>`
+    <tr onclick="openModal(${STUDENTS.indexOf(s)})">
+      <td><span style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:${i===0?'var(--gold)':i===1?'#bfc8d6':i===2?'#c08b54':'var(--text3)'}">
+        ${i===0?'🥇 1':i===1?'🥈 2':i===2?'🥉 3':'#'+(i+1)}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="av av-${s.sex.toLowerCase()}">${initials(s.name)}</div>
+          <div><div style="font-weight:600;color:var(--text)">${s.name}</div>
+          <div style="font-size:10.5px;color:var(--text3)">Batch ${s.batch}</div></div>
+        </div>
+      </td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:11.5px;color:var(--accent)">${s.student_id}</span></td>
+      <td>${s.session}</td>
+      <td>
+        <div class="cb">
+          <div class="ct"><div class="cf" style="width:${(s.cgpa/4)*100}%;background:${cgpaColor(s.cgpa)}"></div></div>
+          <span class="cv" style="color:${cgpaColor(s.cgpa)};font-size:13px;font-weight:600">${s.cgpa}</span>
+        </div>
+      </td>
+      <td style="font-size:11.5px;color:var(--text2)">${s.total_earned} cr</td>
+      <td><span class="status s-${s.status.toLowerCase()}">● ${s.status}</span></td>
+    </tr>`).join('');
+}
+
+function buildPerformance(){
+  const sorted=[...STUDENTS].sort((a,b)=>b.cgpa-a.cgpa);
+  document.getElementById('highPerf').innerHTML=sorted.slice(0,5).map((s,i)=>`
+    <div class="ri">
+      <div class="rn ${i<3?'r'+(i+1):''}">${i+1}</div>
+      <div class="av av-${s.sex.toLowerCase()}" style="width:30px;height:30px;font-size:10.5px">${initials(s.name)}</div>
+      <div style="flex:1"><div style="font-size:12.5px;font-weight:600;color:var(--text)">${s.name}</div>
+      <div style="font-size:10.5px;color:var(--text3)">${s.student_id}</div></div>
+      <span style="color:${cgpaColor(s.cgpa)};font-family:'DM Mono',monospace;font-weight:500">${s.cgpa}</span>
+    </div>`).join('');
+  document.getElementById('lowPerf').innerHTML=sorted.slice(-5).reverse().map((s,i)=>`
+    <div class="ri">
+      <div class="rn" style="color:var(--text3)">${STUDENTS.length-i}</div>
+      <div class="av av-${s.sex.toLowerCase()}" style="width:30px;height:30px;font-size:10.5px">${initials(s.name)}</div>
+      <div style="flex:1"><div style="font-size:12.5px;font-weight:600;color:var(--text)">${s.name}</div>
+      <div style="font-size:10.5px;color:var(--text3)">${s.student_id}</div></div>
+      <span style="color:${cgpaColor(s.cgpa)};font-family:'DM Mono',monospace;font-weight:500">${s.cgpa}</span>
+    </div>`).join('');
+}
+
+function buildNotices(){
+  const notices=[
+    {tag:'Exam',tc:'rgba(240,82,95,.14)',tt:'var(--red)',title:'Final Examination Schedule — 5th Semester',body:'The 5th semester final examination schedule has been released. All students are required to check their hall tickets and comply with seating arrangements.',date:'April 20, 2026'},
+    {tag:'Academic',tc:'rgba(90,130,255,.14)',tt:'var(--accent)',title:'Result Publication — 4th Semester Tabulation Sheet',body:'The official 4th semester result tabulation has been completed and published. Students may collect their marksheets from the department office between 10AM–2PM.',date:'April 15, 2026'},
+    {tag:'General',tc:'rgba(6,239,180,.14)',tt:'var(--accent3)',title:'Department Seminar on AI & Machine Learning',body:'The CSE Department announces an upcoming seminar on "Artificial Intelligence and its Impact on Modern Software Engineering." All students and faculty are invited.',date:'April 10, 2026'},
+    {tag:'Registration',tc:'rgba(245,158,11,.14)',tt:'var(--orange)',title:'Course Registration — 6th Semester Open',body:'Course registration for the upcoming 6th semester is now open on the student portal. Complete registration before the deadline to avoid late fees.',date:'April 8, 2026'},
+    {tag:'Festival',tc:'rgba(139,92,246,.14)',tt:'var(--accent2)',title:'Annual Programming Contest — BUP Hackathon 2026',body:'The annual department hackathon and programming contest is now open for registration. Teams of 2–3 students may register via the department portal.',date:'April 2, 2026'},
+  ];
+  document.getElementById('noticesList').innerHTML=notices.map(n=>`
+    <div class="notice-item">
+      <span class="ntag" style="background:${n.tc};color:${n.tt}">${n.tag}</span>
+      <h4>${n.title}</h4>
+      <p>${n.body}</p>
+      <div class="notice-date">📅 ${n.date}</div>
+    </div>`).join('');
+}
+
+function buildAbout(){
+  const cgpas=STUDENTS.map(s=>s.cgpa).filter(Boolean);
+  const avg=(cgpas.reduce((a,b)=>a+b,0)/cgpas.length).toFixed(2);
+  document.getElementById('aboutStats').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:2px">
+      ${[['👥','Total Students',STUDENTS.length],['📚','Total Courses','80'],['👨‍🏫','Total Teachers','10'],['⭐','Avg. CGPA',avg],['✅','Pass Rate',`${((STUDENTS.filter(s=>s.status==='Passed').length/STUDENTS.length)*100).toFixed(1)}%`],['🏆','Highest CGPA',Math.max(...cgpas).toFixed(2)]].map(([icon,label,val])=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text2)">${icon} ${label}</div>
+          <div style="font-weight:600;color:var(--text);font-family:'DM Mono',monospace;font-size:12.5px">${val}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+function openModal(idx){
+  const s=STUDENTS[idx];
+  document.getElementById('modalHeader').innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:14px">
+      <div class="av av-${s.sex.toLowerCase()}" style="width:50px;height:50px;font-size:17px;flex-shrink:0">${initials(s.name)}</div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:var(--text)">${s.name}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">${s.student_id} · ${s.session} · Batch ${s.batch}</div>
+        <div style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap">
+          <span class="status s-${s.status.toLowerCase()}">● ${s.status}</span>
+          <span style="background:rgba(90,130,255,.09);color:var(--accent);border:1px solid rgba(90,130,255,.18);padding:2px 10px;border-radius:20px;font-size:10.5px;font-weight:600">${s.sex==='F'?'♀ Female':'♂ Male'}</span>
+          <span style="background:rgba(6,239,180,.09);color:var(--accent3);border:1px solid rgba(6,239,180,.18);padding:2px 10px;border-radius:20px;font-size:10.5px;font-weight:600;font-family:'DM Mono',monospace">CGPA: ${s.cgpa}</span>
+        </div>
+      </div>
+    </div>
+    <button class="modal-close" onclick="closeModal()">✕</button>`;
+
+  const semBars=s.semesters.map(sem=>`
+    <div class="sb-wrap">
+      <div class="sb-val">${sem.gpa}</div>
+      <div class="sb-bar" style="height:${Math.max(8,(sem.gpa/4)*90)}px"></div>
+      <div class="sb-lbl">S${sem.sem}</div>
+    </div>`).join('');
+
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">
+      ${[['CGPA',s.cgpa,cgpaColor(s.cgpa)],['Cr. Enrolled',s.total_enrolled,'var(--accent)'],['Cr. Earned',s.total_earned,'var(--accent3)']].map(([l,v,c])=>`
+        <div style="background:rgba(90,130,255,.04);border:1px solid var(--border);border-radius:11px;padding:14px;text-align:center">
+          <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:${c}">${v}</div>
+          <div style="font-size:10.5px;color:var(--text3);margin-top:3px">${l}</div>
+        </div>`).join('')}
+    </div>
+    <div style="background:rgba(90,130,255,.03);border:1px solid var(--border);border-radius:13px;padding:16px;margin-bottom:18px">
+      <div style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;margin-bottom:14px">📊 Semester-wise GPA</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%">
+          <thead><tr><th>Semester</th><th>Cr. Enrolled</th><th>Cr. Earned</th><th>GPA</th></tr></thead>
+          <tbody>${s.semesters.map(sem=>`
+            <tr><td>Semester ${sem.sem}</td><td>${sem.enrolled}</td><td>${sem.earned}</td>
+            <td><span style="font-family:'DM Mono',monospace;font-weight:500;color:${cgpaColor(sem.gpa)}">${sem.gpa}</span></td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="sem-bars" style="margin-top:14px">${semBars}</div>
+    </div>
+    <div>
+      <div style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;margin-bottom:12px">📋 Course Grades</div>
+      <div class="course-grid">
+        ${s.courses.map(c=>`
+          <div class="course-chip">
+            <div class="cc">${c.code}</div>
+            <div class="cg"><span class="grade ${gradeClass(c.grade)}">${c.grade}</span><span class="cr">${c.credits} cr</span></div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="margin-top:18px;padding:12px 14px;background:rgba(90,130,255,.04);border:1px solid var(--border);border-radius:10px;font-size:11.5px;color:var(--text3)">
+      <strong style="color:var(--text2)">Reg. No:</strong> ${s.reg_num} &nbsp;|&nbsp;
+      <strong style="color:var(--text2)">Session:</strong> ${s.session} &nbsp;|&nbsp;
+      <strong style="color:var(--text2)">Batch:</strong> ${s.batch}
+    </div>`;
+
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal()});
+
+/* ═══════════════════════════════════════════
+   GLOBAL SEARCH
+═══════════════════════════════════════════ */
+function globalSearch(q){
+  if(!q) return;
+  showPage('students',null);
+  document.getElementById('stuSearch').value=q;
+  filterStudents();
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('.nav-item:nth-child(2)')?.classList.add('active');
+}
+
+/* ═══════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════ */
+let dark=true;
+function toggleTheme(){
+  dark=!dark;
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  document.querySelector('.icon-btn').textContent=dark?'🌙':'☀️';
+  setTimeout(()=>{Object.values(charts).forEach(c=>c.destroy());charts={};buildCharts();},100);
+}
+
+/* ═══════════════════════════════════════════
+   SCROLL TOP
+═══════════════════════════════════════════ */
+window.addEventListener('scroll',()=>{
+  const btn=document.getElementById('scrollTop');
+  btn.classList.toggle('show',window.scrollY>300);
+},{passive:true});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+</script>
+</body>
+</html>
